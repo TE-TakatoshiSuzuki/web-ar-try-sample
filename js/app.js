@@ -21,27 +21,26 @@ startCamera();
 // モード切替
 // ------------------------------
 stillModeBtn.addEventListener('click', () => {
-  if (video.videoWidth === 0) return;
+  if (camera.videoWidth === 0) return;
 
-  // video → 1フレームを img にコピー
   const canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0);
+  canvas.width = camera.videoWidth;
+  canvas.height = camera.videoHeight;
+  canvas.getContext('2d').drawImage(camera, 0, 0);
 
   stillImage.src = canvas.toDataURL('image/png');
-
-  video.pause();
-  video.style.display = 'none';
+  camera.pause();
+  camera.style.display = 'none';
   stillImage.style.display = 'block';
 });
 
+
 videoModeBtn.addEventListener('click', () => {
   stillImage.style.display = 'none';
-  video.style.display = 'block';
-  video.play();
+  camera.style.display = 'block';
+  camera.play();
 });
+
 
 // ------------------------------
 // オーバーレイ操作（移動・拡大・回転）
