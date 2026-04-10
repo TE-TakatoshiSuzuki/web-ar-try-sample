@@ -1,1 +1,65 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Web AR Demo (Image Overlay)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: sans-serif;
+    }
+
+    #camera {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+    }
+
+    #overlay {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 150px;
+      transform: translate(-50%, -50%) rotate(0deg) scale(1);
+      touch-action: none;
+      cursor: move;
+    }
+
+    #note {
+      position: fixed;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: #fff;
+      opacity: 0.7;
+      background: rgba(0,0,0,0.4);
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <video id="camera" autoplay playsinline></video>
+
+  <!-- 刺繍デザイン -->
+  <img id="overlay" src="design.png" alt="design overlay" />
+
+  <div id="note">
+    ※ 表示は完成イメージです。最終位置は縫製基準で調整します。
+  </div>
+
+  <script src="js\app.js"></script>
+</body>
+</html>
