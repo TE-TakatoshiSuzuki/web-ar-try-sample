@@ -2,7 +2,7 @@ const video = document.getElementById('camera');
 const overlay = document.getElementById('overlay');
 
 // ------------------------------
-// カメラ起動（← ここは「動いてた」ので触らない）
+// カメラ起動（← ここは触らない）
 // ------------------------------
 async function startCamera() {
   try {
@@ -20,7 +20,7 @@ async function startCamera() {
 startCamera();
 
 // ------------------------------
-// オーバーレイ移動・拡大縮小用
+// オーバーレイ操作用
 // ------------------------------
 let isDragging = false;
 let startX = 0;
@@ -28,13 +28,19 @@ let startY = 0;
 let currentX = window.innerWidth / 2;
 let currentY = window.innerHeight / 2;
 let scale = 1;
+let rotation = 0; // ★ 回転を追加
 
 function setTransform() {
   overlay.style.transform =
-    `translate(${currentX}px, ${currentY}px) translate(-50%, -50%) scale(${scale})`;
+    `translate(${currentX}px, ${currentY}px)` +
+    ` translate(-50%, -50%)` +
+    ` rotate(${rotation}deg)` +   // ★ 回転を追加
+    ` scale(${scale})`;
 }
 
-// 移動（マウス）
+// ------------------------------
+// 移動（マウスドラッグ）
+// ------------------------------
 overlay.addEventListener('mousedown', (e) => {
   isDragging = true;
   startX = e.clientX - currentX;
@@ -52,11 +58,21 @@ window.addEventListener('mouseup', () => {
   isDragging = false;
 });
 
-// 拡大縮小（ホイール）
+// ------------------------------
+// 拡大縮小 / 回転（ホイール）
+// ------------------------------
 overlay.addEventListener('wheel', (e) => {
   e.preventDefault();
-  scale += e.deltaY * -0.001;
-  scale = Math.min(Math.max(0.1, scale), 5);
+
+  if (e.shiftKey) {
+    // ★ Shift + ホイール → 回転
+    rotation += e.deltaY * 0.1;
+  } else {
+    // ★ 通常ホイール → 拡大縮小
+    scale += e.deltaY * -0.001;
+    scale = Math.min(Math.max(0.1, scale), 5);
+  }
+
   setTransform();
 });
 
