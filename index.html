@@ -40,3 +40,31 @@
     #note {
       position: fixed;
       bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: #fff;
+      opacity: 0.7;
+      background: rgba(0,0,0,0.4);
+      padding: 4px 8px;
+      border-radius: 4px;
+      z-index: 20;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- カメラ映像 -->
+  <video id="camera" autoplay playsinline></video>
+
+  <!-- オーバーレイ画像 -->
+  img/design.png
+
+  <div id="note">
+    ※ 表示は完成イメージです。最終位置は縫製基準で調整します。
+  </div>
+
+  <!-- JavaScript -->
+  js/app.js</script>
+</body>
+</html>
