@@ -92,3 +92,75 @@ overlay.addEventListener('wheel', (e) => {
 });
 
 setTransform();
+
+// ==============================
+// タッチ操作（Android / タブレット）
+// ==============================
+
+let lastTouchDistance = 0;
+let lastTouchAngle = 0;
+
+overlay.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+
+  if (e.touches.length === 1) {
+    // 1本指ドラッグ（移動）
+    isDragging = true;
+    startX = e.touches[0].clientX - currentX;
+    startY = e.touches[0].clientY - currentY;
+  }
+
+  if (e.touches.length === 2) {
+    // 2本指操作 初期化
+    lastTouchDistance = getDistance(e.touches);
+    lastTouchAngle = getAngle(e.touches);
+  }
+}, { passive: false });
+
+overlay.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+
+  if (e.touches.length === 1 && isDragging) {
+    // 移動
+    currentX = e.touches[0].clientX - startX;
+    currentY = e.touches[0].clientY - startY;
+    setTransform();
+  }
+
+  if (e.touches.length === 2) {
+    // 拡大縮小 + 回転
+    const newDistance = getDistance(e.touches);
+    const newAngle = getAngle(e.touches);
+
+    // スケール
+    scale *= newDistance / lastTouchDistance;
+    scale = Math.min(Math.max(0.1, scale), 5);
+
+    // 回転
+    rotation += newAngle - lastTouchAngle;
+
+    lastTouchDistance = newDistance;
+    lastTouchAngle = newAngle;
+
+    setTransform();
+  }
+}, { passive: false });
+
+overlay.addEventListener('touchend', () => {
+  isDragging = false;
+});
+
+// ------------------------------
+// タッチ用ユーティリティ
+// ------------------------------
+function getDistance(touches) {
+  const dx = touches[0].clientX - touches[1].clientX;
+  const dy = touches[0].clientY - touches[1].clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function getAngle(touches) {
+  const dx = touches[1].clientX - touches[0].clientX;
+  const dy = touches[1].clientY - touches[0].clientY;
+  return Math.atan2(dy, dx) * (180 / Math.PI);
+}
