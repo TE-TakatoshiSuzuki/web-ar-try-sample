@@ -68,8 +68,16 @@ window.addEventListener('mouseup', () => {
 // ホイールで拡大縮小
 overlay.addEventListener('wheel', (e) => {
   e.preventDefault();
-  scale += e.deltaY * -0.001;
-  scale = Math.min(Math.max(0.1, scale), 5);
+
+  if (e.shiftKey) {
+    // 回転
+    rotation += e.deltaY * 0.1;
+  } else {
+    // 拡大縮小
+    scale += e.deltaY * -0.001;
+    scale = Math.min(Math.max(0.1, scale), 5);
+  }
+
   setTransform();
 });
 
