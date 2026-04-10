@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>Web AR Demo (Image Overlay)</title>
+  <title>Web AR Preview</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 
   <style>
@@ -14,7 +14,8 @@
       background: #000;
     }
 
-    #camera {
+    #camera,
+    #stillImage {
       position: fixed;
       top: 0;
       left: 0;
@@ -24,15 +25,33 @@
       z-index: 0;
     }
 
+    #stillImage {
+      display: none;
+    }
+
     #overlay {
       position: fixed;
       top: 50%;
       left: 50%;
       width: 150px;
-      transform: translate(-50%, -50%) scale(1);
+      transform: translate(-50%, -50%);
       touch-action: none;
       cursor: move;
       z-index: 10;
+    }
+
+    #controls {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 20;
+      display: flex;
+      gap: 8px;
+    }
+
+    button {
+      padding: 6px 10px;
+      font-size: 14px;
     }
 
     #note {
@@ -52,17 +71,25 @@
 </head>
 
 <body>
-  <!-- カメラ映像 -->
+  <!-- 動画 -->
   <video id="camera" autoplay playsinline muted></video>
 
-  <!-- オーバーレイ画像 -->
-  <img id="overlay" src="img/design.png" alt="Preview" />
+  <!-- 静止画 -->
+  <img id="stillImage" />
 
-  <div id="note">
-    ※ 表示は完成イメージです。最終位置は縫製基準で調整します。
+  <!-- 刺繍デザイン -->
+  <img id="overlay" src="img/design.png" />
+
+  <!-- 操作UI -->
+  <div id="controls">
+    <button id="videoModeBtn">動画モード</button>
+    <button id="stillModeBtn">静止画モード</button>
   </div>
 
-  <!-- JavaScript -->
+  <div id="note">
+    ※ 完成イメージです。スクリーンショットで保存してください。
+  </div>
+
   <script src="js/app.js"></script>
 </body>
 </html>
