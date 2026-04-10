@@ -22,6 +22,7 @@
       width: 100vw;
       height: 100vh;
       object-fit: cover;
+      z-index: 0;
     }
 
     #overlay {
@@ -29,37 +30,13 @@
       top: 50%;
       left: 50%;
       width: 150px;
-      transform: translate(-50%, -50%) rotate(0deg) scale(1);
+      transform: translate(-50%, -50%);
       touch-action: none;
       cursor: move;
+      z-index: 10;
+      pointer-events: auto;
     }
 
     #note {
       position: fixed;
       bottom: 8px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 12px;
-      color: #fff;
-      opacity: 0.7;
-      background: rgba(0,0,0,0.4);
-      padding: 4px 8px;
-      border-radius: 4px;
-    }
-  </style>
-</head>
-
-<body>
-  <!-- カメラ映像 -->
-  <video id="camera" autoplay playsinline></video>
-
-  <!-- 刺繍デザイン（img/design.png） -->
-  <img id="overlay" src="img/design.png" alt="Embroidery design" />
-
-  <div id="note">
-    ※ 表示は完成イメージです。最終位置は縫製基準で調整します。
-  </div>
-
-  <script src="app.js"></script>
-</body>
-</html>
