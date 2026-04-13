@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Web AR Preview</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-
+  
   <style>
     html, body {
       margin: 0;
@@ -42,6 +42,7 @@
     /* 刺繍デザイン */
     #overlay {
       position: fixed;
+      transform-origin: center center;
       top: 0;
       left: 0;
       width: 150px;
@@ -71,6 +72,20 @@
       padding: 4px 8px;
       border-radius: 4px;
     }
+
+    #realSizeLabel {
+      position: fixed;
+      top: 48px;
+      right: 10px;
+      z-index: 30;
+      padding: 6px 10px;
+      background: rgba(0,0,0,0.65);
+      color: #fff;
+      font-size: 13px;
+      border-radius: 4px;
+      pointer-events: none;
+      white-space: nowrap;
+    }
   </style>
 </head>
 
@@ -91,10 +106,32 @@
     <button id="stillModeBtn">静止画モード</button>
   </div>
 
+  <div id="realSizeLabel"></div>
+
   <div id="note">
-    ※ 完成イメージです。スクリーンショットで保存してください。
+    ※ 完成イメージです。スクリーンショットで保存してください。<br>
+    ※ サイズは静止画時の距離を基準にした目安です<br>
+    ※ カメラ距離を変えた場合は再キャリブレーションしてください
   </div>
 
+  <div id="calibMessage"
+     style="position:fixed;top:50%;left:50%;
+            transform:translate(-50%,-50%);
+            background:rgba(0,0,0,0.7);
+            color:#fff;padding:12px 18px;
+            border-radius:6px;
+            z-index:100;display:none;">
+  </div>
+
+
+  <canvas id="arucoDebugCanvas"
+        style="position:fixed;
+               top:0;left:0;
+               width:100vw;height:100vh;
+               pointer-events:none;
+               z-index:5;"></canvas>
+  <div id="calibMessage"></div>
+  <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
