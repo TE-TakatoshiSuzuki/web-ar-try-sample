@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tシャツ 刺繍プレビュー</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: #000;
+      color: #fff;
+      font-family: sans-serif;
+    }
+
+    /* === 全体グリッド === */
+    .layout {
+      display: grid;
+      grid-template-columns: 70% 30%;
+      grid-template-rows: 70% 20% 10%;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* === AR表示エリア === */
+    .ar-area {
+      grid-column: 1 / 2;
+      grid-row: 1 / 2;
+      position: relative;
+      background: #000;
+      overflow: hidden;
+    }
+
+    /* 仮プレースホルダ */
+    .ar-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #aaa;
+      font-size: 14px;
+    }
+
+    /* === 未使用エリア（右側・中央）=== */
+    .side-area {
+      grid-column: 2 / 3;
+      grid-row: 1 / 3;
+      background: #111;
+    }
+
+    
+    .middle-area {
+      grid-column: 1 / 2;   /* 左列 */
+      grid-row: 2 / 3;      /* 中段 */
+      background: #111;
+    }
+
+    /* === フッター === */
+    .footer {
+      grid-column: 1 / 3;
+      grid-row: 3 / 4;
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+    }
+
+    .footer button {
+      padding: 10px 16px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-back {
+      background: #444;
+      color: #fff;
+    }
+
+    .btn-confirm {
+      background: #1e90ff;
+      color: #fff;
+    }
+
+    /* カメラ・静止画・デバッグ用だけをフルサイズ */
+    #camera {
+      position: relative;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #arucoDebugCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events:none;
+      z-index: 100;
+    }
+
+    #stillImage {
+      position: relative;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;       /* ← これが超重要 */
+    }
+
+    #overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      height: auto; /* 縦横比を維持する */
+      transform: translate(-50%,-50%);
+      touch-action: none;
+      pointer-events: auto;
+      scale: 1;
+      overflow: hidden; /* 必要に応じてはみ出した部分を隠す */
+    }
+
+    #overlay-frame {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      height: auto;
+      border: 5px dashed rgba(0, 255, 255, 0.6);
+      box-sizing: border-box;
+      pointer-events: none;   /* 操作は overlay に渡す */
+      scale: 1;
+      z-index: 99;             /* overlay の一つ下 or 上 */
+    }
+
+    #calibMessage {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 12px 18px;
+      background: rgba(0, 0, 0, 0.75);
+      color: #fff;
+      font-size: 14px;
+      border-radius: 6px;
+      z-index: 20;          /* overlay より上 */
+      pointer-events: none; /* AR操作を邪魔しない */
+      display: none;        /* 初期は非表示 */
+      white-space: nowrap;
+    }
+
+    #realSizeLabel {
+      position: relative;
+      top: 5%;
+      left: 1%;
+      z-index: 30;
+      padding: 6px 10px;
+      background: rgba(0,0,0,0.65);
+      color: #fff;
+      font-size: 13px;
+      border-radius: 4px;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="layout">
+
+    <!-- AR表示領域 -->
+    <div class="ar-area">
+      <video id="camera" autoplay playsinline muted></video>
+      <img id="stillImage" />
+      <div id="overlay-frame"></div>
+      <img id="overlay" src="img/design.png" draggable="true" />
+      <div id="calibMessage"></div>
+      <canvas id="arucoDebugCanvas"></canvas>
+    </div>
+
+    <!-- 右側エリア（将来拡張用） -->
+    <div class="side-area">
+      <!-- 今は何も置かない -->
+      <div id="realSizeLabel"></div>
+    </div>
+
+        <!-- 中段（将来拡張） -->
+    <div class="middle-area">
+      <button id="videoModeBtn">動画モード</button>
+      <button id="stillModeBtn">静止画モード</button>
+    </div>
+
+    <!-- フッター -->
+    <div class="footer">
+      <button class="btn-back"
+              onclick="location.href='index.html'">
+        ← 戻る
+      </button>
+
+      <span aria-hidden="true">ℹ️操作方法がわからない場合は、スタッフにお声がけください。</span>
+
+      <button class="btn-confirm">
+        確定
+      </button>
+    </div>
+
+  </div>
+  <!-- 既存のARロジック -->
+  <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

@@ -2,136 +2,84 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>Web AR Preview</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  
+  <title>刺繍プレビュー</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <style>
-    html, body {
+    body {
       margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #000;
-    }
-
-    /* 背景ラッパー */
-    #background {
-      position: fixed;
-      inset: 0;
-      overflow: hidden;
-      z-index: 0;
-    }
-
-    /* 動画・静止画は「背景」として扱う */
-    #camera,
-    #stillImage {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center center;
-    }
-
-    /* 静止画は初期非表示 */
-    #stillImage {
-      display: none;
-    }
-
-    /* 刺繍デザイン */
-    #overlay {
-      position: fixed;
-      transform-origin: center center;
-      top: 0;
-      left: 0;
-      width: 150px;
-      touch-action: none;
-      cursor: move;
-      z-index: 10
-    }
-
-    /* UI */
-    #controls {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      z-index: 20;
+      font-family: sans-serif;
+      background: #111;
+      color: #fff;
+      min-height: 100vh;
       display: flex;
-      gap: 8px;
+      justify-content: center;
+      align-items: center;
     }
 
-    #note {
-      position: fixed;
-      bottom: 8px;
-      left: 50%;
-      z-index: 20;
+    .container {
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      margin: 10px 0;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #1e90ff;
+      color: #fff;
+    }
+
+    .btn-disabled {
+      background: #444;
+      color: #aaa;
+      cursor: not-allowed;
+    }
+
+    .note {
+      margin-top: 12px;
       font-size: 12px;
-      color: #fff;
-      background: rgba(0,0,0,0.4);
-      padding: 4px 8px;
-      border-radius: 4px;
+      color: #aaa;
     }
 
-    #realSizeLabel {
-      position: fixed;
-      top: 48px;
-      right: 10px;
-      z-index: 30;
-      padding: 6px 10px;
-      background: rgba(0,0,0,0.65);
-      color: #fff;
-      font-size: 13px;
-      border-radius: 4px;
-      pointer-events: none;
-      white-space: nowrap;
-    }
   </style>
 </head>
 
 <body>
-  <!-- 背景レイヤー -->
-  <div id="background">
-    <video id="camera" autoplay playsinline muted></video>
-    <img id="stillImage" />
+  <div class="container">
+    <h1>タイプを選択してください</h1>
+
+    <!-- 準備中 -->
+    <button class="btn btn-disabled" disabled>
+      ボタン（準備中）
+    </button>
+
+    <!-- ✅ 有効：Tシャツ -->
+    <button class="btn btn-primary"
+            onclick="location.href='tshirt.html'">
+      Tシャツ
+    </button>
+
+    <button class="btn btn-disabled" disabled>
+      靴下・リストバンド（準備中）
+    </button>
+
+    <div class="note">
+      ※ 現在は Tシャツのみ対応しています
+    </div>
   </div>
-
-
-  <!-- 刺繍デザイン -->
-  <img id="overlay" src="img/design.png" />
-
-  <!-- 操作UI -->
-  <div id="controls">
-    <button id="videoModeBtn">動画モード</button>
-    <button id="stillModeBtn">静止画モード</button>
-  </div>
-
-  <div id="realSizeLabel"></div>
-
-  <div id="note">
-    ※ 完成イメージです。スクリーンショットで保存してください。<br>
-    ※ サイズは静止画時の距離を基準にした目安です<br>
-    ※ カメラ距離を変えた場合は再キャリブレーションしてください
-  </div>
-
-  <div id="calibMessage"
-     style="position:fixed;top:50%;left:50%;
-            transform:translate(-50%,-50%);
-            background:rgba(0,0,0,0.7);
-            color:#fff;padding:12px 18px;
-            border-radius:6px;
-            z-index:100;display:none;">
-  </div>
-
-
-  <canvas id="arucoDebugCanvas"
-        style="position:fixed;
-               top:0;left:0;
-               width:100vw;height:100vh;
-               pointer-events:none;
-               z-index:5;"></canvas>
-  <div id="calibMessage"></div>
-  <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
-  <script src="js/app.js"></script>
 </body>
 </html>

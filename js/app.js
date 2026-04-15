@@ -4,8 +4,24 @@
 const video = document.getElementById('camera');
 const stillImage = document.getElementById('stillImage');
 const overlay = document.getElementById('overlay');
+const overlayFrame = document.getElementById('overlay-frame');
 const videoModeBtn = document.getElementById('videoModeBtn');
 const stillModeBtn = document.getElementById('stillModeBtn');
+
+
+window.addEventListener('DOMContentLoaded', () => {
+  overlayFrame.style.width  = overlay.naturalWidth + 'px';
+  overlayFrame.style.height = overlay.naturalHeight + 'px';
+
+  // 初期位置を強制的に反映
+  setTransform();
+
+  console.log('overlay size:',
+    overlay.getBoundingClientRect().width,
+    overlay.getBoundingClientRect().height
+  );
+});
+
 
 // ==============================
 // カメラ起動
@@ -35,6 +51,7 @@ stillModeBtn.addEventListener('click', () => {
   const canvas = document.createElement('canvas');
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
+  console.log('video.videoWidth', video.videoWidth);
 
   const ctx = canvas.getContext('2d');
   ctx.drawImage(video, 0, 0);
@@ -46,6 +63,9 @@ stillModeBtn.addEventListener('click', () => {
     showCalibrationError('ArUcoマーカーを対象物と一緒に写してください');
     return;
   }
+
+  const rect2 = camera.getBoundingClientRect();
+  ovr_v_scale = rect2.width / video.videoWidth;
 
   // 成功時のみ静止画化
   hideCalibrationMessage();
@@ -69,8 +89,8 @@ videoModeBtn.addEventListener('click', () => {
 // ==============================
 // 刺繍オーバーレイ 操作状態
 // ==============================
-let currentX = window.innerWidth / 2;
-let currentY = window.innerHeight / 2;
+let currentX = 0;//window.innerWidth / 2;
+let currentY = 0;//window.innerHeight / 2;
 let scale = 1;
 let rotation = 0;
 
@@ -92,6 +112,7 @@ setTransform();
 // Pointer Events（PC / Android 共通）
 // ==============================
 overlay.addEventListener('pointerdown', (e) => {
+  console.log('pointerdown on overlay', e.clientX, e.clientY);
   overlay.setPointerCapture(e.pointerId);
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
@@ -163,11 +184,12 @@ overlay.addEventListener('wheel', (e) => {
   if (e.shiftKey) {
     rotation += e.deltaY * 0.1;
   } else {
-    scale += e.deltaY * -0.001;
-    scale = Math.min(Math.max(0.1, scale), 5);
+    scale += e.deltaY * -0.0001;
+    scale = Math.min(Math.max(0.01, scale), 5);
   }
   setTransform();
   updateRealSizeLabel();
+  console.log('scale', scale);
 }, { passive: false });
 
 const calibMessage = document.getElementById('calibMessage');
@@ -192,37 +214,41 @@ function applyDesignScale(mmPerPx) {
   const TARGET_MM = 20;         // ArUco マーカー実寸
 
   // 今表示されている design の幅（px）
-  const rect = overlay.getBoundingClientRect();
-  const currentPx = rect.width;
+  const currentPx = overlay.naturalWidth;
 
   // 今の表示サイズが何mm相当か
   const currentMm = currentPx * DESIGN_MM_PER_PX;
 
+  const targetPx = currentMm / mmPerPx;
   // 目標mmとの比率
-  const ratio = TARGET_MM / currentMm;
+  const ratio = targetPx / currentPx;
 
   // scale に累積で掛ける
-  scale *= ratio;
+  scale = ratio;
 
   console.log('currentPx', currentPx);
   console.log('currentMm', currentMm);
   console.log('ratio', ratio);
-  console.log('new scale', scale);
+  console.log('overlay.naturalWidth', overlay.naturalWidth);
 
   setTransform();
   updateRealSizeLabel();
 }
 
 function setTransform() {
-     //translate(-50%, -50%)
-  overlay.style.transform =
+  const transform =
     `translate(${currentX}px, ${currentY}px)
-     rotate(${rotation}deg)
-     scale(${scale})`;
+      translate(-50%, -50%)
+      rotate(${rotation}deg)
+    scale(${scale})`;
+    
+  overlay.style.transform = transform;
+  overlayFrame.style.transform = transform;
 }
 
 const ARUCO_SIZE_MM = 20;   // マーカー実寸
 let mmPerPx = null;        // キャリブレーション結果
+let ovr_v_scale = 1;
 
 const realSizeLabel = document.getElementById('realSizeLabel');
 
@@ -232,9 +258,16 @@ function updateRealSizeLabel() {
   const rect = overlay.getBoundingClientRect();
   if (rect.width === 0 || rect.height === 0) return;
 
-  const widthMm  = rect.width  * 0.1;//mmPerPx;
-  const heightMm = rect.height * 0.1;//mmPerPx;
-//alert(rect.width);
+  const widthMm  = rect.width  * mmPerPx / ovr_v_scale;
+  const heightMm = rect.height * mmPerPx;
+  // console.log('----*****************************----');
+  // console.log('rect.width', rect.width);
+  // console.log('debugCanvas.width', debugCanvas.width);
+  // console.log('video.videoWidth', video.videoWidth);
+  // console.log('video.width', rect2.width);
+  // console.log('sc', sc);
+  // console.log('widthMm', widthMm);
+  // console.log('mmPerPx', mmPerPx);
   realSizeLabel.textContent =
     `W ${widthMm.toFixed(1)} mm × H ${heightMm.toFixed(1)} mm`;
 }
@@ -280,6 +313,13 @@ function detectArucoAndScale(canvas) {
     return false;
   }
 
+  const arArea = document.querySelector('.ar-area');
+
+  const rect = arArea.getBoundingClientRect();
+  xRatio = rect.width / canvas.width;   // ⚠️ 属性
+  yRatio = rect.height / canvas.height;  // ⚠️ 属性
+
+  
   // IDと座標情をマッチング
 //  for (let i = 0; i < findMarkerCount; i++) {
     // ID
@@ -309,6 +349,7 @@ function detectArucoAndScale(canvas) {
 
 //  }
 
+
   let total = 0;
   for (let i = 0; i < 4; i++) {
     const p1 = pts[i];
@@ -316,6 +357,7 @@ function detectArucoAndScale(canvas) {
     total += Math.hypot(p2.x - p1.x, p2.y - p1.y);
   }
   const markerPx = total / 4; // 1辺平均
+  console.log('markerPx', markerPx);
 
     // 結果の表示
 //  const canvas = $('#canvas')[0];
@@ -335,19 +377,16 @@ function detectArucoAndScale(canvas) {
   // マーカーID表示
   ctx.fillStyle = 'green';
   ctx.font = '12px Times New Roman';
-  ctx.fillText(findMarkerIds[0], x, my + 12);
+  ctx.fillText(id, x, my + 12);
 
-//   // px → mm 換算
+   // px → mm 換算
    mmPerPx = ARUCO_SIZE_MM / markerPx;
-//alert(mmPerPx + ',' + markerPx);
-//   // 刺繍画像に反映
+   // 刺繍画像に反映
+   console.log('mmPerPx', mmPerPx);
+   console.log('pts[0].x', pts[0].x);
+   console.log('pts[0].y', pts[0].y);
    applyDesignScale(mmPerPx);
    updateRealSizeLabel();
-
-//   // ✅ 可視化（枠描画）
-//   cv.aruco.drawDetectedMarkers(src, corners, ids);
-
-  // cv.imshow(debugCanvas, src);
 
   // 後始末
   src.delete();
