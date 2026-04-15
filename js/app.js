@@ -12,6 +12,8 @@ const stillModeBtn = document.getElementById('stillModeBtn');
 window.addEventListener('DOMContentLoaded', () => {
   overlayFrame.style.width  = overlay.naturalWidth + 'px';
   overlayFrame.style.height = overlay.naturalHeight + 'px';
+  overlay.style.display = 'none';
+  overlayFrame.style.display = 'none';  
 
   // 初期位置を強制的に反映
   setTransform();
@@ -78,12 +80,16 @@ stillModeBtn.addEventListener('click', () => {
   video.pause();
   video.style.display = 'none';
   stillImage.style.display = 'block';
+  overlay.style.display = 'block';
+  overlayFrame.style.display = 'block';  
 });
 
 videoModeBtn.addEventListener('click', () => {
   stillImage.style.display = 'none';
   video.style.display = 'block';
   video.play();
+  overlay.style.display = 'none';
+  overlayFrame.style.display = 'none';  
 });
 
 // ==============================
