@@ -172,6 +172,47 @@
       pointer-events: none;
       white-space: nowrap;
     }
+
+
+    .ar-text {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+    }
+
+    .ar-text span {
+      position: absolute;
+      top: 0;
+      white-space: pre;
+      transform-origin: center center;
+    }
+
+    .ar-text-top {
+      top: 5%;
+    }
+
+    .ar-text-bottom {
+      bottom: 95%;
+    }
+
+    /* side-area UI用 */
+    .side-area {
+      padding: 12px;
+      font-size: 14px;
+    }
+
+    .side-area label {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .side-area input,
+    .side-area select {
+      width: 100%;
+      margin-top: 4px;
+    }
   </style>
 </head>
 
@@ -184,20 +225,95 @@
       <img id="stillImage" />
       <div id="overlay-frame"></div>
       <img id="overlay" src="img/design.png" draggable="true" />
+      <!-- 上テキスト -->
+      <div id="textTop" class="ar-text ar-text-top"></div>
+      <!-- 下テキスト -->
+      <div id="textBottom" class="ar-text ar-text-bottom"></div>
       <div id="calibMessage"></div>
       <canvas id="arucoDebugCanvas"></canvas>
     </div>
 
     <!-- 右側エリア（将来拡張用） -->
     <div class="side-area">
-      <!-- 今は何も置かない -->
-      <div id="realSizeLabel"></div>
+      <h3>上の文字</h3>
+      <label>
+        文字列
+        <input type="text" id="topTextInput">
+      </label>
+
+      <label>
+        色
+        <input type="color" id="topColorInput" value="#ffffff">
+      </label>
+
+      <label>
+        フォント
+        <select id="topFontInput">
+          <option value="sans-serif">ゴシック</option>
+          <option value="serif">明朝</option>
+          <option value="monospace">等幅</option>
+          <option value="'Arial Black', sans-serif">太字</option>
+        </select>
+      </label>
+
+      <label>
+        サイズ
+        <input type="number" id="topSizeInput" value="24">
+      </label>
+
+      <label>
+        弧の強さ
+      <input type="range"
+            id="topRadiusInput"
+            min="-2001"
+            max="2001"
+            value="0">
+      </label>
+
+      <hr>
+
+      <h3>下の文字</h3>
+      <label>
+        文字列
+        <input type="text" id="bottomTextInput">
+      </label>
+
+      <label>
+        色
+        <input type="color" id="bottomColorInput" value="#ffffff">
+      </label>
+
+      <label>
+        フォント
+        <select id="bottomFontInput">
+          <option value="sans-serif">ゴシック</option>
+          <option value="serif">明朝</option>
+          <option value="monospace">等幅</option>
+          <option value="'Arial Black', sans-serif">太字</option>
+        </select>
+      </label>
+
+      <label>
+        サイズ
+        <input type="number" id="bottomSizeInput" value="24">
+      </label>
+      
+      <label>
+        弧の強さ
+        <input type="range"
+              id="bottomRadiusInput"
+              min="-2001"
+              max="2001"
+              value="0">
+      </label>
+
     </div>
 
         <!-- 中段（将来拡張） -->
     <div class="middle-area">
       <button id="videoModeBtn">動画モード</button>
       <button id="stillModeBtn">静止画モード</button>
+      <div id="realSizeLabel"></div>
     </div>
 
     <!-- フッター -->
@@ -209,7 +325,7 @@
 
       <span aria-hidden="true">ℹ️操作方法がわからない場合は、スタッフにお声がけください。</span>
 
-      <button class="btn-confirm">
+      <button id="btn-confirm">
         確定
       </button>
     </div>

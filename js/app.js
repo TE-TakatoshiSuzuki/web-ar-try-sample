@@ -7,7 +7,9 @@ const overlay = document.getElementById('overlay');
 const overlayFrame = document.getElementById('overlay-frame');
 const videoModeBtn = document.getElementById('videoModeBtn');
 const stillModeBtn = document.getElementById('stillModeBtn');
-
+const confirmBtn = document.getElementById('btn-confirm');
+const textTop = document.getElementById('textTop');
+const textBottom = document.getElementById('textBottom');
 
 window.addEventListener('DOMContentLoaded', () => {
   overlayFrame.style.width  = overlay.naturalWidth + 'px';
@@ -399,5 +401,435 @@ function detectArucoAndScale(canvas) {
   markerIds.delete();
 
   return true;
+}
+
+function updateTopText() {
+  textTop.textContent = document.getElementById('topTextInput').value;
+  textTop.style.color = document.getElementById('topColorInput').value;
+  textTop.style.fontFamily = document.getElementById('topFontInput').value;
+  textTop.style.fontSize =
+    document.getElementById('topSizeInput').value + 'px';
+}
+
+function updateBottomText() {
+  textBottom.textContent = document.getElementById('bottomTextInput').value;
+  textBottom.style.color = document.getElementById('bottomColorInput').value;
+  textBottom.style.fontFamily = document.getElementById('bottomFontInput').value;
+  textBottom.style.fontSize =
+    document.getElementById('bottomSizeInput').value + 'px';
+}
+
+
+[
+  'topTextInput',
+  'topColorInput',
+  'topFontInput',
+  'topSizeInput'
+].forEach(id => {
+  document.getElementById(id).addEventListener('input', updateTopText);
+});
+
+[
+  'bottomTextInput',
+  'bottomColorInput',
+  'bottomFontInput',
+  'bottomSizeInput'
+].forEach(id => {
+  document.getElementById(id).addEventListener('input', updateBottomText);
+});
+
+// 初期位置（％基準でもpx基準でもOK）
+let topTextX = 0;
+let topTextY = 40;
+
+let bottomTextX = 0;
+let bottomTextY = -40;
+
+// 表示反映
+function updateTextPosition() {
+  textTop.style.transform =
+    `translate(-50%, -50%) translate(${topTextX}px, ${topTextY}px)`;
+
+  textBottom.style.transform =
+    `translate(-50%, -50%) translate(${bottomTextX}px, ${bottomTextY}px)`;
+}
+
+updateTextPosition();
+
+function enableTextDrag(element, pos) {
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+
+  element.addEventListener('pointerdown', (e) => {
+    e.stopPropagation(); // overlay操作と分離
+    isDragging = true;
+    startX = e.clientX - pos.x;
+    startY = e.clientY - pos.y;
+    element.setPointerCapture(e.pointerId);
+  });
+
+  element.addEventListener('pointermove', (e) => {
+    if (!isDragging) return;
+    pos.x = e.clientX - startX;
+    pos.y = e.clientY - startY;
+    updateTextPosition();
+  });
+
+  element.addEventListener('pointerup', () => {
+    isDragging = false;
+  });
+
+  element.addEventListener('pointercancel', () => {
+    isDragging = false;
+  });
+}
+
+enableTextDrag(textTop, {
+  get x() { return topTextX; },
+  set x(v) { topTextX = v; },
+  get y() { return topTextY; },
+  set y(v) { topTextY = v; }
+});
+
+enableTextDrag(textBottom, {
+  get x() { return bottomTextX; },
+  set x(v) { bottomTextX = v; },
+  get y() { return bottomTextY; },
+  set y(v) { bottomTextY = v; }
+});
+
+function renderCurvedText({
+  container,
+  text,
+  radius,        // ← UIから渡す
+  fontSize,
+  fontFamily,
+  color
+}) {
+  container.innerHTML = '';
+  if (!text) return;
+  console.log('radius', radius);
+
+  const chars = text.split('');
+
+  // 総角度は文字数から自動決定（自然）
+  const totalAngle = chars.length * 0.25; // rad（調整可）
+  const step = chars.length > 1
+    ? totalAngle / (chars.length - 1)
+    : 0;
+  const startAngle = -totalAngle / 2;
+
+  chars.forEach((char, i) => {
+    const span = document.createElement('span');
+    span.textContent = char;
+
+    span.style.fontSize = fontSize + 'px';
+    span.style.fontFamily = fontFamily;
+    span.style.color = color;
+
+    const angle = startAngle + step * i;
+
+    const x = Math.sin(angle) * radius;
+    const y = -Math.cos(angle) * radius + radius;
+
+    span.style.transform =
+      `translate(${x}px, ${y}px)
+       rotate(${angle}rad)
+       translate(-50%, -50%)`;
+
+    container.appendChild(span);
+  });
+}
+
+function updateTopText() {
+  
+  let sliderValue = parseInt(topRadiusInput.value);
+  if ((sliderValue >= -30) && (sliderValue <= 30)) {
+    sliderValue = 0;
+  }
+  if (sliderValue > 0) {
+    sliderValue -= 2000;
+  }
+  else if (sliderValue < 0) {
+    sliderValue += 2000;
+  }
+  const radius = sliderValue;//curvedRadiusFromSlider(sliderValue);
+
+  renderBaselineCurvedText({
+    container: textTop,
+    text: topTextInput.value,
+    radius: radius,
+    fontSize: parseInt(topSizeInput.value),
+    fontFamily: topFontInput.value,
+    color: topColorInput.value
+  });
+}
+
+function updateBottomText() {
+
+  let sliderValue = parseInt(bottomRadiusInput.value);
+  if ((sliderValue >= -30) && (sliderValue <= 30)) {
+    sliderValue = 0;
+  }
+  if (sliderValue > 0) {
+    sliderValue -= 2000;
+  }
+  else if (sliderValue < 0) {
+    sliderValue += 2000;
+  }
+  const radius = sliderValue;//curvedRadiusFromSlider(sliderValue);
+
+  renderBaselineCurvedText({
+    container: textBottom,
+    text: bottomTextInput.value,
+    radius: radius,
+    fontSize: parseInt(bottomSizeInput.value),
+    fontFamily: bottomFontInput.value,
+    color: bottomColorInput.value
+  });
+}
+
+[
+  topTextInput,
+  topColorInput,
+  topFontInput,
+  topSizeInput,
+  topRadiusInput
+].forEach(el => {
+  el.addEventListener('input', updateTopText);
+});
+
+[
+  bottomTextInput,
+  bottomColorInput,
+  bottomFontInput,
+  bottomSizeInput,
+  bottomRadiusInput
+].forEach(el => {
+  el.addEventListener('input', updateBottomText);
+});
+
+function renderBaselineCurvedText({
+  container,
+  text,
+  radius,        // 半径（px）
+  fontSize,
+  fontFamily,
+  color
+}) {
+  container.innerHTML = '';
+  if (!text) return;
+  console.log('radius', radius);
+  const spans = [];
+
+  // ① 直線配置
+  for (const char of text) {
+    const span = document.createElement('span');
+    span.textContent = char;
+    span.style.fontSize = fontSize + 'px';
+    span.style.fontFamily = fontFamily;
+    span.style.color = color;
+    span.style.position = 'relative';
+    container.appendChild(span);
+    spans.push(span);
+  }
+
+  // ② レイアウト確定後に曲げ処理
+  requestAnimationFrame(() => {
+    const rects = spans.map(s => s.getBoundingClientRect());
+    const centersX = rects.map(r => r.left + r.width / 2);
+
+    // 中央文字を基準にする
+    const midIndex = Math.floor(centersX.length / 2);
+    const baseX = centersX[midIndex];
+
+    spans.forEach((span, i) => {
+      const dx = centersX[i] - baseX;
+
+      // ---- 曲率が十分大きいときは完全に直線 ----
+      if (radius == 0) {
+        span.style.position = 'absolute';
+        span.style.left = '50%';
+        span.style.top = '0';
+        span.style.transform =
+          `translate(${dx}px, 0) translate(-50%, 0)`;
+        return;
+      }
+
+      // ---- 円弧処理 ----
+      const angle = dx / radius;
+
+      const arcX = Math.sin(angle) * radius;
+      const arcY = radius * (1 - Math.cos(angle));
+
+      span.style.position = 'absolute';
+      span.style.left = '50%';
+      span.style.top = '0';
+      span.style.transform =
+        `translate(${arcX}px, ${arcY}px)
+         rotate(${angle}rad)
+         translate(-50%, 0)`;
+    });
+  });
+}
+
+
+confirmBtn.addEventListener('click', () => {
+  captureCompositeImage();
+})
+
+function captureCompositeImage() {
+  const arArea = document.querySelector('.ar-area');
+  const rect = arArea.getBoundingClientRect();
+
+  // 出力用canvas
+  const canvas = document.createElement('canvas');
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  const ctx = canvas.getContext('2d');
+
+  // -----------------------
+  // ① 背景：静止画
+  // -----------------------
+  if (stillImage.style.display !== 'none') {
+    ctx.drawImage(stillImage, 0, 0, canvas.width, canvas.height);
+  } else {
+    // 念のため（動画状態ならvideoを描画）
+    ctx.drawImage(camera, 0, 0, canvas.width, canvas.height);
+  }
+
+  // -----------------------
+  // ② 刺繍 overlay
+  // -----------------------
+  drawElementWithTransform(ctx, overlay, arArea);
+
+  // -----------------------
+  // ③ 上下テキスト
+  // -----------------------
+  drawTextElement(ctx, textTop, arArea);
+  drawTextElement(ctx, textBottom, arArea);
+
+  // -----------------------
+  // 完成
+  // -----------------------
+  const dataUrl = canvas.toDataURL('image/png');
+
+  // デバッグ表示 or 保存
+  downloadImage(dataUrl, 'preview.png');
+}
+
+function drawElementWithTransform(ctx, element, container) {
+  const rect = element.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+
+  const x = rect.left - containerRect.left;
+  const y = rect.top - containerRect.top;
+
+  ctx.save();
+
+  // 中心に移動
+  ctx.translate(
+    x + rect.width / 2,
+    y + rect.height / 2
+  );
+
+  // transform取得
+  const style = getComputedStyle(element);
+  const transform = style.transform;
+
+  if (transform && transform !== 'none') {
+    const m = new DOMMatrix(transform);
+    ctx.transform(m.a, m.b, m.c, m.d, m.e, m.f);
+  }
+
+  // 描画
+  ctx.drawImage(
+    element,
+    -rect.width / 2,
+    -rect.height / 2,
+    rect.width,
+    rect.height
+  );
+
+  ctx.restore();
+}
+
+function drawElementWithTransform(ctx, element, container) {
+  const rect = element.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+
+  const x = rect.left - containerRect.left;
+  const y = rect.top - containerRect.top;
+
+  ctx.save();
+
+  // 中心に移動
+  ctx.translate(
+    x + rect.width / 2,
+    y + rect.height / 2
+  );
+
+  // transform取得
+  const style = getComputedStyle(element);
+  const transform = style.transform;
+
+  if (transform && transform !== 'none') {
+    const m = new DOMMatrix(transform);
+    ctx.transform(m.a, m.b, m.c, m.d, m.e, m.f);
+  }
+
+  // 描画
+  ctx.drawImage(
+    element,
+    -rect.width / 2,
+    -rect.height / 2,
+    rect.width,
+    rect.height
+  );
+
+  ctx.restore();
+}
+
+function drawTextElement(ctx, container, arArea) {
+  const spans = container.querySelectorAll('span');
+  const areaRect = arArea.getBoundingClientRect();
+
+  spans.forEach(span => {
+    const rect = span.getBoundingClientRect();
+
+    const x = rect.left - areaRect.left;
+    const y = rect.top - areaRect.top;
+
+    const style = getComputedStyle(span);
+
+    ctx.save();
+
+    // フォント
+    ctx.font = `${style.fontSize} ${style.fontFamily}`;
+    ctx.fillStyle = style.color;
+    ctx.textBaseline = 'top';
+
+    // transform反映
+    const transform = style.transform;
+    ctx.translate(x, y);
+
+    if (transform && transform !== 'none') {
+      const m = new DOMMatrix(transform);
+      ctx.transform(m.a, m.b, m.c, m.d, m.e, m.f);
+    }
+
+    ctx.fillText(span.textContent, 0, 0);
+    ctx.restore();
+  });
+}
+
+function downloadImage(dataUrl, filename) {
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
